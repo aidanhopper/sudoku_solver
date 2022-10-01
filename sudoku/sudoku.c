@@ -1,5 +1,8 @@
 #include "sudoku.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include "stack.h"
+#include <sys/random.h>
 
 void PrintBoard(char *board) {
   for (int i = 0; i < 81; i++) {
@@ -91,18 +94,35 @@ void PrintAllPossibleNumbers(int **possibleNumbers) {
     }
 }
 
-void GenerateMove(char *board, int **possibleNumbers) {
+int Rand(int range) {
+  unsigned int tmp;
+  getrandom(&tmp, sizeof(unsigned int), GRND_NONBLOCK) == -1 ? perror("getrandom") : "";
+  return (int) (tmp % range);
+}
+
+char GenerateNumber(int *possibleNumbers) {
+  char nums[9];
+  int nIndex = 0;
+  for (int i = 0; i < 9; i++)
+    if (possibleNumbers[i] == 1)
+      nums[nIndex++] = i + 49;     
+
+  if (nIndex == 0)
+    return -1;
+  
+  return nums[Rand(nIndex)];
+}
+
+void GenerateMove(char *board, int **possibleNumbers, Stack *stack) {
   // generates possible numbers for every position on the board
   for (int i = 0; i < 81; i++)
     GetPossibleNumbers(board, i, possibleNumbers[i]);
 
-  // PrintAllPossibleNumbers(possibleNumbers);
-
   // finds the lowest entropy index
   int LEI = FindLowestEntropy(possibleNumbers);
   int *LEINumbers = possibleNumbers[LEI];
+  char newNum = GenerateNumber(possibleNumbers[LEI]);
 
-  printf("%d ", LEI);
-  PrintPossibleNumbers(LEINumbers);
-  
+  StackPush(stack, board);
+  board[LEI] = newNum;
 }
