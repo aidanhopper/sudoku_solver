@@ -24,7 +24,7 @@ char * StackPop(Stack *stack) {
     stack->size--;
     char * str = stack->head->string;
     struct StackNode *nextNode = stack->head->next;
-    free(stack->head);
+    //free(stack->hea1);
     stack->head = nextNode;
     return str;
   }

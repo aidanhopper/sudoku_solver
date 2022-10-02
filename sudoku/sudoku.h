@@ -2,14 +2,20 @@
 #define SUDOKU_H
 
 #include "stack.h"
+#include "hashmap.h"
+
+typedef struct {
+  int values[82];
+  int size;
+} EntropyArr;
 
 void PrintBoard(char *board);
 void GetPossibleNumbers(char *board, int index, int *arr);
 int ToIndex(char character);
 void PrintPossibleNumbers(int *arr);
-void GenerateMove(char *board, int **possibleNumbers, Stack *stack);
-int FindLowestEntropy(int **possibleNumbers);
+void GenerateMove(char *board, int **possibleNumbers, Stack *stack, HashMap *map, int num);
 int Rand(int range);
-char GenerateNumber(int *possibleNumbers);
+void PrintAllPossibleNumbers(int **possibleNumbers);
+int Done(char *board);
 
 #endif
