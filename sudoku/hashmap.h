@@ -12,11 +12,14 @@ struct HashMapNode{
 
 typedef struct {
   struct HashMapNode **buckets;
+  int size;
 } HashMap;
 
 void HashMapInit(HashMap *map);
 int Hash(char *str);
 void HashMapPut(HashMap *map, char *key, int value);
 int HashMapGet(HashMap *map, char *key);
+void PrintHashMap(HashMap *map);
+
 
 #endif

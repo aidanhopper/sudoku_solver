@@ -5,6 +5,7 @@
 
 void HashMapInit(HashMap *map) {
   // allocating memory for hashmap
+  map->size = 0;
   map->buckets = malloc(sizeof(struct HashMapNode*) * HASHMAP_INIT_SIZE);
   for (int i = 0; i < HASHMAP_INIT_SIZE; i++)
     map->buckets[i] = malloc(sizeof(struct HashMapNode));
@@ -32,15 +33,15 @@ int CompareKeys(char *key1, char *key2) {
   return 1;
 }
 
-
 void HashMapPut(HashMap *map, char *k, int value) {
   char *key = malloc(sizeof(char*) * 82);
   strcpy(key, k);
-  int index = Hash(k);
+  int index = Hash(key);
   if (map->buckets[index]->key[0] == '\0') {
     map->buckets[index]->key = key;
     map->buckets[index]->value = value;
     map->buckets[index]->next = NULL;
+    map->size++;
     return;
   }
 
@@ -49,13 +50,12 @@ void HashMapPut(HashMap *map, char *k, int value) {
     return;
   }
 
-
   // find last node in bucket
   struct HashMapNode *tmp = map->buckets[index];
   while(tmp->next != NULL) {
     tmp = tmp->next;
     if (CompareKeys(tmp->key, key)) {
-      map->buckets[index]->value = value;
+      tmp->value = value;
       return;
     }
   }
@@ -68,13 +68,27 @@ void HashMapPut(HashMap *map, char *k, int value) {
   tmp->next->key = key;
   tmp->next->value = value;
   tmp->next->next = NULL;
+  map->size++;
+}
+
+void PrintHashMap(HashMap *map) {
+  for (int i  = 0; i < HASHMAP_INIT_SIZE; i++) {
+    struct HashMapNode *tmp = map->buckets[i];
+    if (tmp->key[0] != '\0')
+      printf("loc: %d val:%d key:%s\n", i, tmp->value, tmp->key);
+
+    while(tmp->next != NULL) {
+      tmp = tmp->next;
+      printf("loc: %d val:%d key:%s\n", i, tmp->value, tmp->key);
+    }
+    
+  }
 }
 
 int HashMapGet(HashMap *map, char *key) {
   int index = Hash(key);
   // if bucket has no nodes then insert node and return false
   if (map->buckets[index]->key[0] == '\0') {
-    HashMapPut(map, key, 0);
     return 0;
   }
   // if bucket has nodes then search for it and return value of match
@@ -89,7 +103,6 @@ int HashMapGet(HashMap *map, char *key) {
   }
 
   // if not match then insert key and return false
-  HashMapPut(map, key, 0);
   return 0;
 
 }

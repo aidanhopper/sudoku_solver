@@ -4,6 +4,7 @@
 #include "stack.h"
 #include "hashmap.h"
 #include "sudoku.h"
+#include <string.h>
 #include <sys/random.h>
 
 void PrintBoard(char *board) {
@@ -19,6 +20,10 @@ void PrintBoard(char *board) {
 
 int ToIndex(char character) {
   return character - 49;
+}
+
+char ToChar(int num) {
+  return num + 49;
 }
 
 void PrintPossibleNumbers(int *arr) {
@@ -139,26 +144,12 @@ int Done(char *board) {
   return 1;  
 }
 
-int GenerateLEI(char *board, int **possibleNumbers, HashMap *map) {
+int GenerateLEI(char *board, int **possibleNumbers) {
   EntropyArr *LEI = FindLowestEntropy(possibleNumbers);
   if (LEI->size == 0)
     return -1;
 
   int val = LEI->values[Rand(LEI->size)];
-  for (int i = 0; i < LEI->size; i++) {
-    // check if LEI + generate nums are blacklisted
-
-    // get index 
-    int index = LEI->values[i];
-
-    // get possible numbers
-    int *pNums = possibleNumbers[index];
-
-    // return first one that is not blacklisted
-    
-
-  }
-
   free(LEI);
   return val;
 }
@@ -166,31 +157,95 @@ int GenerateLEI(char *board, int **possibleNumbers, HashMap *map) {
 void SetBoard(char *board, char *newboard) {
   for (int i = 0; i < 81; i++)
     board[i] = newboard[i];
-  free(newboard);
 }
 
-void GenerateMove(char *board, int **possibleNumbers, Stack *stack, HashMap *map, int num) {
+int Different(char *str1, char *str2) {
+  for (int i = 0; i < 81; i++)
+    if (str1[i] != str2[i])
+      return 1;
+  return 0;
+}
+
+// Need to add a way to track used values at an index on stack
+void GenerateMove(char *board, int **possibleNumbers, Stack *stack) {
   // generates possible numbers for every position on the board
   for (int i = 0; i < 81; i++)
    GetPossibleNumbers(board, i, possibleNumbers[i]);
 
+  EntropyArr *LEI = FindLowestEntropy(possibleNumbers);
 
-  // finds the lowest entropy index
-  int LEI = GenerateLEI(board, possibleNumbers, map);
+  // check if head of stack is the same or new state
+  // char *topstr = StackTopStr(stack);
+  struct StackNode *node = StackTop(stack);
+  int different = Different(board, node->string);
 
-  // check if theres a contracdiction
-  // if so pop off the stack and go back a step
+  // Iterate through possible indexes
+  for (int i = 0; i < LEI->size; i++) {
+    // get index
+    int index = LEI->values[i];
+    int arr[9];
+    GetPossibleNumbers(board, index, arr);
+
+    // Iterate through every character for each index
+    for (int j = 0; j < 9; j++) {
+      if (arr[j] == 1) {
+	// get character
+	char character = ToChar(j);
+
+	board[index] = character;
+	if (!StackIsEmpty(stack)) {
+	  printf("id:%d:index:%d:[ ", node->id, index);
+	  for (int k = 0; k < 9; k++)
+	    if (node->usedNums[index][k] == 1)printf("%d:%d ", k+1, node->usedNums[index][k]);
+	  printf("] char:%c\n", character);
+	}
+
+	if (different) {
+	  board[index] = character;
+	  struct StackNode *newnode = CreateStackNode(stack, board);
+	  newnode->usedNums[index][j] = 1;
+	  printf("node id: %d\n", newnode->id);
+	  StackPush(stack, newnode);
+	  return;
+	}
+
+	if (!different && node->usedNums[index][j] == 0) {
+	  board[index] = character;
+	  //struct StackNode *newnode = CreateStackNode(stack, board);
+	  node->usedNums[index][j] = 1;
+	  //StackPush(stack, newnode);
+	  return;
+	}
+
+      }
+    }
+  }
+
+  // go back
+  // pop node off stack and delete it because it has a contradiction
+  struct StackNode *delnode = StackPop(stack);
+  //for (int i = 0; i < 81; i++)
+    //  free(delnode->usedNums[i]);
+  //free(delnode->usedNums);
+  //free(delnode->string);
+  //free(delnode);
+
+  // set board
+  struct StackNode *nnode = StackTop(stack);
+  SetBoard(board, nnode->string);
+  
+}
+
+void GenRandMove(char *board, int **possibleNumbers, Stack *stack) {
+  for (int i = 0; i < 81; i++)
+   GetPossibleNumbers(board, i, possibleNumbers[i]);
+
+  int LEI = GenerateLEI(board, possibleNumbers);
   if (LEI == -1) {
-    char *newboard = StackPop(stack);
-    // list to map since there was a contracdiction
-    HashMapPut(map, board, 1);
+    SetBoard(board, StackTop(stack)->string);
     return;
   }
 
-
-  StackPush(stack, board);
-  char newNum = GenerateNumber(possibleNumbers[LEI]);
-  board[LEI] = newNum;
-
-  // check if listed on map 
+  char character = GenerateNumber(possibleNumbers[LEI]);
+  board[LEI] = character;
 }

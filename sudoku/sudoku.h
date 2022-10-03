@@ -12,8 +12,9 @@ typedef struct {
 void PrintBoard(char *board);
 void GetPossibleNumbers(char *board, int index, int *arr);
 int ToIndex(char character);
+void GenRandMove(char *board, int **possibleNumbers, Stack *stack);
 void PrintPossibleNumbers(int *arr);
-void GenerateMove(char *board, int **possibleNumbers, Stack *stack, HashMap *map, int num);
+void GenerateMove(char *board, int **possibleNumbers, Stack *stack);
 int Rand(int range);
 void PrintAllPossibleNumbers(int **possibleNumbers);
 int Done(char *board);

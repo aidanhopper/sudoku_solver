@@ -8,8 +8,8 @@
 int main() {
 
   char board[] = {
-    ' ', ' ', ' ', /**/ '9', ' ', ' ', /**/ '3', '1', '5',
-    ' ', '3', '1', /**/ ' ', '2', ' ', /**/ ' ', '8', ' ',
+    '2', '8', '6', /**/ '9', '4', '7', /**/ '3', '1', '5',
+    '4', '3', '1', /**/ '6', '2', '5', /**/ ' ', '8', ' ',
     ' ', ' ', ' ', /**/ ' ', '3', ' ', /**/ '4', ' ', ' ',
     /***************************************************/
     ' ', ' ', '3', /**/ '8', ' ', ' ', /**/ ' ', ' ', ' ',
@@ -18,7 +18,7 @@ int main() {
     /***************************************************/
     ' ', ' ', '8', /**/ ' ', '6', ' ', /**/ ' ', ' ', ' ',
     ' ', '7', ' ', /**/ ' ', '8', ' ', /**/ '5', '2', ' ',
-    '6', '1', '5', /**/ ' ', ' ', '9', /**/ ' ', ' ', ' ',
+    '6', '1', '5', /**/ ' ', ' ', '9', /**/ ' ', ' ', '4',
     '\0'
   }; 
 
@@ -26,19 +26,14 @@ int main() {
   for (int i = 0; i < 81; i++)
     possibleNumbers[i] = malloc(sizeof(*possibleNumbers[i]) * 9);
 
-  HashMap map;
-  HashMapInit(&map);
-
   Stack stack;
   StackInit(&stack);
+  StackPush(&stack, CreateStackNode(&stack, board));
+  
+  while(!Done(board))
+    GenRandMove(board, possibleNumbers, &stack);
+  
+  PrintBoard(board);
 
-  int i = 0;
-  while(!Done(board)) {
-  //for (int x = 0; x < 100; x++) {
-    GenerateMove(board, possibleNumbers, &stack, &map, i);
-    printf("board : %s\n",  board);
-    i++;
-  }
-    //PrintBoard(board);
   return 0; 
 }
